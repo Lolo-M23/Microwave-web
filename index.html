@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Microwave</title>
+<link rel="icon" href="https://www.mclhospitality.com/wp-content/timthumb/timthumb.php?src=https://www.mclhospitality.com/wp-content/uploads/micr-256x256.png&w=256&h=256&zc=2&cc=FFFFFF" type="image/png">
+<style>
+/* ===== BODY ===== */
+body {
+  margin:0;
+  background:#0b0b0b;
+  color:white;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ===== SHAKE ===== */
+@keyframes shake {
+  0% { transform: translate(0); }
+  20% { transform: translate(-10px,5px); }
+  40% { transform: translate(10px,-5px); }
+  60% { transform: translate(-8px,4px); }
+  80% { transform: translate(8px,-4px); }
+  100% { transform: translate(0); }
+}
+
+/* ===== MICROWAVE ===== */
+.microwave {
+  width:780px;
+  height:540px;
+  position:relative;
+  background: url("microwave.png") center/contain no-repeat;
+}
+.microwave.shake { animation: shake 0.25s; }
+
+/* ===== SCREEN ===== */
+.screen {
+  position:absolute;
+  left:120px;
+  top:135px;
+  width:390px;
+  height:270px;
+  overflow:hidden;
+  background:black;
+  border-radius:6px;
+}
+
+/* ===== DOOR ===== */
+.door {
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.1);
+  backdrop-filter: blur(2px);
+  transform-origin:left;
+  transform:rotateY(0deg);
+  transition: transform 0.5s ease;
+  z-index:6;
+  border:2px solid #555;
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
+  background-image: 
+    radial-gradient(circle, rgba(200,200,200,0.6) 10%, transparent 10%), 
+    radial-gradient(circle, rgba(200,200,200,0.6) 10%, transparent 10%);
+  background-size:12px 12px;
+  background-position:0 0, 6px 6px;
+}
+.door.open { transform:rotateY(-100deg); }
+
+/* ===== PLATE ===== */
+.plate {
+  position:absolute;
+  width:240px;
+  height:240px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  object-fit: contain;
+  pointer-events: none;
+  z-index:3;
+}
+.plate.spin { animation: spin 1.4s linear infinite; }
+@keyframes spin {
+  from { transform:translate(-50%,-50%) rotate(0deg); }
+  to { transform:translate(-50%,-50%) rotate(360deg); }
+}
+
+/* ===== FOOD ===== */
+img.food {
+  position:absolute;
+  top:50%;
+  left:50%;
+  max-width:180px;
+  max-height:180px;
+  transform:translate(-50%,-50%);
+  z-index:4;
+  transition: filter 0.3s, transform 0.3s;
+}
+
+/* ===== FROST / ICE OVER ===== */
+.frost {
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:180px;
+  height:180px;
+  transform:translate(-50%,-50%);
+  background: rgba(180,230,255,0.5);
+  border-radius: 10px;
+  pointer-events:none;
+  z-index:5;
+  mix-blend-mode: lighten;
+  opacity:0;
+  transition: opacity 0.3s;
+}
+.frost.on { opacity:1; }
+
+/* ===== FIRE ===== */
+.fire {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  z-index:2;
+}
+.fire.on { opacity:1; }
+.fire::before, .fire::after {
+  content:"";
+  position:absolute;
+  bottom:-20%;
+  width:140%; height:140%;
+  left:-20%;
+  background:
+    radial-gradient(circle at 30% 90%, rgba(255,180,0,0.9), transparent 60%),
+    radial-gradient(circle at 60% 95%, rgba(255,90,0,0.9), transparent 65%),
+    radial-gradient(circle at 50% 85%, rgba(255,255,0,0.8), transparent 60%);
+  filter: blur(8px);
+  animation: flame 0.35s infinite alternate;
+}
+.fire::after { animation-duration:0.25s; opacity:0.7; }
+@keyframes flame { from { transform: translateY(0) scaleY(1); } to { transform: translateY(-18px) scaleY(1.1); } }
+
+/* ===== FLASHBANG ===== */
+.flashbang {
+  position:fixed;
+  inset:0;
+  background:white;
+  opacity:0;
+  pointer-events:none;
+  z-index:999;
+}
+.flashbang.on { animation: flashbang 0.18s steps(2); }
+@keyframes flashbang { from { opacity:1; } to { opacity:0; } }
+
+/* ===== CONTROLS ===== */
+.controls {
+  position:absolute;
+  right:-32px;
+  top:90px;
+  width:210px;
+}
+button { width:50%; margin:9px 0; padding:9px; cursor:pointer; border-radius: 999px; }
+input[type="range"] { width:50%; }
+.status { font-size:16px; opacity:0.7; margin-top:6px; }
+
+/* ===== GEIGER COUNTER ===== */
+.geiger {
+  position:absolute;
+  right:423px; top:50px;
+  width:80px; height:80px;
+  background:rgba(0,0,0,0.6);
+  border:2px solid #fff;
+  border-radius:50%;
+  display:flex; justify-content:center; align-items:center;
+  flex-direction:column;
+  z-index:10;
+}
+.geiger-label { position:absolute; bottom:-20px; font-size:12px; width:100%; text-align:center; color:#fff; }
+.geiger-needle {
+  position:absolute; bottom:50%; width:2px; height:40%;
+  background:red; transform-origin:bottom center;
+  transition: transform 0.1s linear, background 0.3s; z-index:11;
+}
+
+/* ===== POPCORN ===== */
+.popcorn-piece {
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+  will-change: transform, opacity;
+  z-index:50;
+}
+
+/* ===== FRIDGE ===== */
+#fridge {
+  position:fixed;
+  bottom:50px; left:-200px; width:120px; height:auto;
+  z-index:100; transform-origin:bottom center;
+  animation:none;
+}
+@keyframes fridgeBounce {
+  0% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-15px) rotate(5deg); }
+  50% { transform: translateY(0) rotate(-5deg); }
+  75% { transform: translateY(-10px) rotate(3deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ===== BIG FRIDGE + STOMP ===== */
+#fridge.big { width:260px; filter: drop-shadow(0 0 25px rgba(255,255,255,0.7)); }
+body.fridge-stomp { animation: fridgeStompShake 0.15s infinite; }
+@keyframes fridgeStompShake {
+  0% { transform: translate(0); }
+  25% { transform: translate(4px,-2px); }
+  50% { transform: translate(-4px,3px); }
+  75% { transform: translate(3px,-3px); }
+  100% { transform: translate(0); }
+}
+
+/* ===== GRAMPA ===== */
+.grampa {
+  position:fixed; width:120px; height:auto; pointer-events:none; opacity:0;
+  transition: opacity 0.8s ease; z-index:200;
+}
+
+/* ===== PHONE ===== */
+#phone {
+  position:fixed; bottom:500px; left:10%;
+  transform:translateX(-50%); width:400px; height:auto;
+  cursor:pointer; transition: transform 0.3s; z-index:150;
+}
+#phone.ringing { animation: phoneRing 0.5s infinite alternate; }
+@keyframes phoneRing { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(15deg); } }
+</style>
+</head>
+<body>
+
+<div class="microwave" id="microwave">
+  <div class="screen">
+    <div class="fire" id="fire"></div>
+    <img class="plate" id="plate" src="plate.png" alt="Plate">
+    <img id="food" class="food">
+    <div class="frost" id="frost"></div>
+    <div class="door open" id="door"></div>
+  </div>
+
+  <div class="controls">
+    <input type="file" accept="image/*" id="upload">
+    ⏲️ Time <input type="range" id="timeDial" min="5" max="30" value="15">
+    <button onclick="cook()">🍳 Cook</button>
+    <button onclick="eat()">🍽️ Eat</button>
+    <button onclick="popcorn()">🍿 Popcorn</button>
+    <button onclick="toggleDoor()">🚪 Toggle Door</button>
+    <button onclick="thaw()">❄️ Freeze/Thaw</button>
+    <div class="status" id="status">Ready.</div>
+  </div>
+
+  <div class="geiger">
+    <div class="geiger-needle" id="needle"></div>
+    <div class="geiger-label">Radiation</div>
+  </div>
+</div>
+
+<div class="flashbang" id="flashbang"></div>
+<img id="fridge" src="fridge.png" alt="Fridge">
+<img id="phone" src="phone.png" alt="Phone">
+
+<script>
+const upload=document.getElementById("upload");
+const img=document.getElementById("food");
+const plate=document.getElementById("plate");
+const door=document.getElementById("door");
+const fire=document.getElementById("fire");
+const timeDial=document.getElementById("timeDial");
+const status=document.getElementById("status");
+const microwaveEl=document.getElementById("microwave");
+const flashbang=document.getElementById("flashbang");
+const needle=document.getElementById("needle");
+const fridge=document.getElementById("fridge");
+const phone=document.getElementById("phone");
+const frost=document.getElementById("frost");
+
+const sounds={
+  microwave:new Audio("microwave.mp3"),
+  ding:new Audio("ding.mp3"),
+  metal:new Audio("metal.mp3"),
+  popcorn:new Audio("popcorn.mp3"),
+  door:new Audio("door.mp3"),
+  fridge:new Audio("fridge.mp3"),
+  grampa:new Audio("grampa.mp3"),
+  bite:"bite.mp3",
+  stomp:new Audio("stomp.mp3"),
+  crack:new Audio("crack.mp3")
+};
+sounds.microwave.loop=true;
+sounds.metal.volume=1.0;
+sounds.grampa.volume=0.7;
+
+let cooking=false;
+let fridgeInterval;
+let isIced=false;
+const foodImages=["food1.png","food2.png","food3.png"];
+
+/* ===== IMAGE UPLOAD ===== */
+upload.addEventListener("change",()=>loadImage(upload.files[0]));
+document.addEventListener("paste",e=>{ for(const item of e.clipboardData.items) if(item.type.startsWith("image")) loadImage(item.getAsFile()); });
+function loadImage(file){ if(!file)return; img.src=URL.createObjectURL(file); reset(); }
+
+/* ===== RESET ===== */
+function reset(){
+  img.style.filter="none";
+  img.style.transform="translate(-50%,-50%)";
+  img.style.clipPath="none";
+  plate.classList.remove("spin");
+  fire.classList.remove("on");
+  door.classList.add("open");
+  frost.classList.remove("on");
+  isIced=false;
+  new Audio("door.mp3").play();
+  status.textContent="Ready.";
+  needle.style.transform='rotate(0deg)';
+  needle.style.background='red';
+}
+
+/* ===== GEIGER ===== */
+function updateGeiger(time,maxTime){
+  const deg=Math.min((time/maxTime)*270,270);
+  needle.style.transform=`rotate(${deg}deg)`;
+  needle.style.background=deg<90?'lime':deg<180?'yellow':'red';
+}
+
+/* ===== COOK ===== */
+function cook(){
+  if(!img.src) return;
+  door.classList.remove("open"); new Audio("door.mp3").play();
+  setFridgeCooking(true);
+  if(Math.random()<0.6) return setTimeout(metalJumpscare,150);
+
+  let time=0; const maxTime=Number(timeDial.value);
+  sounds.microwave.currentTime=0; sounds.microwave.play();
+  plate.classList.add("spin"); fire.classList.add("on"); status.textContent="Cooking...";
+
+  const interval=setInterval(()=>{
+    time++;
+    img.style.transform=`translate(-50%,-50%) rotate(${time*7}deg) scale(${1+time*0.03})`;
+    img.style.filter=`blur(${time*0.6}px) saturate(${1+time*0.4}) contrast(${1+time*0.3})`;
+    updateGeiger(time,maxTime);
+    if(time>=maxTime) finishCooking(interval);
+  },300);
+}
+
+function finishCooking(interval){
+  clearInterval(interval);
+  sounds.microwave.pause();
+  plate.classList.remove("spin");
+  fire.classList.remove("on");
+  door.classList.add("open"); new Audio("door.mp3").play();
+  sounds.ding.play(); status.textContent="Done.";
+  setFridgeCooking(false);
+}
+
+/* ===== METAL JUMPSCARE ===== */
+function metalJumpscare(){
+  sounds.microwave.pause(); new Audio("metal.mp3").play();
+  flashbang.classList.add("on"); microwaveEl.classList.add("shake"); fire.classList.add("on");
+  let deg=0;
+  const metalInterval=setInterval(()=>{ deg+=60; needle.style.transform=`rotate(${deg}deg)`; needle.style.background='red'; },50);
+  setTimeout(()=>{
+    clearInterval(metalInterval);
+    flashbang.classList.remove("on");
+    microwaveEl.classList.remove("shake");
+    door.classList.add("open"); new Audio("door.mp3").play();
+    status.textContent="⚠️ METAL DETECTED"; needle.style.transform='rotate(0deg)';
+  },180);
+}
+
+/* ===== EAT ===== */
+function eat(){
+  if(!img.src)return;
+  let bites=0; status.textContent="Eating...";
+  const chew=setInterval(()=>{
+    bites++;
+    const biteSound=new Audio(sounds.bite);
+    biteSound.volume=0.8+Math.random()*0.2; biteSound.playbackRate=0.9+Math.random()*0.2; biteSound.play();
+    img.style.clipPath=`circle(${80-bites*10}% at ${50+bites*4}% ${50-bites*3}%)`;
+    if(bites>=7){ clearInterval(chew); img.src=""; img.style.clipPath="none"; status.textContent="Consumed."; needle.style.transform='rotate(0deg)'; }
+  },260);
+}
+
+/* ===== POPCORN ===== */
+function popcorn(){
+  if(!img.src) return;
+  const pieces=12; const rect=img.getBoundingClientRect();
+  new Audio("popcorn.mp3").play();
+  for(let i=0;i<pieces;i++){
+    const piece=document.createElement("div");
+    piece.className="popcorn-piece";
+    piece.style.width=piece.style.height=`${20+Math.random()*20}px`;
+    piece.style.backgroundImage=`url(${img.src})`;
+    piece.style.backgroundSize=`${rect.width}px ${rect.height}px`;
+    piece.style.backgroundPosition=`${-Math.random()*rect.width}px ${-Math.random()*rect.height}px`;
+    piece.style.left=`${rect.left+rect.width/2}px`; piece.style.top=`${rect.top+rect.height/2}px`;
+    document.body.appendChild(piece);
+    const angle=Math.random()*2*Math.PI; const distance=200+Math.random()*100; const duration=1000+Math.random()*1000;
+    piece.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:duration,easing:'ease-out',fill:'forwards'});
+    setTimeout(()=>piece.remove(),duration);
+  }
+  img.src=""; status.textContent="Popcorned! 🍿";
+}
+
+/* ===== DOOR ===== */
+function toggleDoor(){ door.classList.toggle("open"); new Audio("door.mp3").play(); status.textContent = door.classList.contains("open") ? "Door opened." : "Door closed."; }
+
+/* ===== FRIDGE ===== */
+function runFridgeRandomly(){
+  fridgeInterval=setTimeout(()=>startFridgeRun(cooking?1000:3000),Math.random()*20000+4000);
+}
+function startFridgeRun(duration){
+  new Audio("fridge.mp3").play();
+  const isBig=Math.random()<0.25;
+  let stompInterval=null;
+  if(isBig){
+    fridge.classList.add("big"); document.body.classList.add("fridge-stomp");
+    stompInterval=setInterval(()=>{ sounds.stomp.currentTime=0; sounds.stomp.play(); },300);
+    fridge.style.animation='fridgeBounce 0.15s infinite';
+  } else { fridge.style.animation='fridgeBounce 0.3s infinite'; }
+  fridge.style.transition=`left ${duration/1000}s linear`; fridge.style.left='100%';
+  setTimeout(()=>{
+    if(stompInterval) clearInterval(stompInterval);
+    fridge.style.transition='none'; fridge.style.left='-200px'; fridge.style.animation='none';
+    fridge.classList.remove("big"); document.body.classList.remove("fridge-stomp");
+    runFridgeRandomly();
+  },duration);
+}
+function setFridgeCooking(isCooking){ cooking=isCooking; if(isCooking){ clearTimeout(fridgeInterval); startFridgeRun(1000); } }
+
+/* ===== GRAMPA ===== */
+function spawnGrampa(){
+  const grampa=document.createElement("img"); grampa.src="grampa.png"; grampa.className="grampa";
+  grampa.style.left=`${Math.random()*(window.innerWidth-120)}px`;
+  grampa.style.top=`${Math.random()*(window.innerHeight-120)}px`;
+  document.body.appendChild(grampa); new Audio("grampa.mp3").play();
+  requestAnimationFrame(()=>grampa.style.opacity=1);
+  const duration=1500+Math.random()*1500;
+  setTimeout(()=>{ grampa.style.opacity=0; setTimeout(()=>grampa.remove(),800); },duration);
+}
+setInterval(()=>{ if(Math.random()<0.3) spawnGrampa(); },10000);
+
+/* ===== PHONE ===== */
+let phoneRinging=false; let phoneRingSound=null;
+function ringPhoneRandomly(){
+  setTimeout(()=>{
+    if(phoneRinging) return;
+    phoneRinging=true; phone.classList.add("ringing");
+    phoneRingSound=new Audio("phone_ring.mp3"); phoneRingSound.loop=true; phoneRingSound.play();
+    setTimeout(()=>{ if(phoneRinging) stopPhoneRinging(); },5000+Math.random()*3000);
+    ringPhoneRandomly();
+  },10000+Math.random()*15000);
+}
+function stopPhoneRinging(){ phoneRinging=false; phone.classList.remove("ringing"); if(phoneRingSound){ phoneRingSound.pause(); phoneRingSound.currentTime=0; phoneRingSound=null; } }
+phone.addEventListener("click",()=>{
+  if(phoneRinging){ stopPhoneRinging(); const randomFood=foodImages[Math.floor(Math.random()*foodImages.length)]; img.src=randomFood; reset(); status.textContent="New food placed!"; }
+});
+ringPhoneRandomly();
+
+/* ===== FREEZE / THAW ===== */
+function thaw(){
+  if(!img.src) return;
+  isIced=!isIced;
+  if(isIced){
+    frost.classList.add("on");
+    new Audio(sounds.crack.src).play();
+    status.textContent="❄️ Food is iced over!";
+  } else {
+    frost.classList.remove("on");
+    status.textContent="🌊 Food thawed!";
+  }
+}
+
+/* ===== START FRIDGE ===== */
+runFridgeRandomly();
+</script>
+</body>
+</html>
